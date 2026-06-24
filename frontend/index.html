@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cc Quote Monitor</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div>
+        <h1>Cc Quote Monitor</h1>
+        <p class="subtitle">Tencent Finance real-time quotes · refreshes every 2 seconds</p>
+      </div>
+      <div class="status">
+        <button id="toggle-btn" class="toggle-btn" type="button" aria-label="Show quotes" title="Show quotes"></button>
+        <span id="status-dot" class="dot"></span>
+        <span id="status-text">Idle</span>
+        <span id="updated-at" class="updated-at"></span>
+      </div>
+    </header>
+
+    <div id="content-panel" class="content-panel hidden">
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search pinyin / code..." />
+      <span id="stock-count" class="count"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name (Pinyin)</th>
+            <th>Code</th>
+            <th>Price</th>
+            <th>Change</th>
+            <th>Change %</th>
+            <th>Low</th>
+            <th>High</th>
+            <th>Volume (lots)</th>
+          </tr>
+        </thead>
+        <tbody id="stock-body">
+          <tr><td colspan="8" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
