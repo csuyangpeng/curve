@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -57,7 +58,7 @@ var stockNameMapping = map[string]string{
 	"sh000001": "Shanghai Composite Index",
 	"sz399001": "Shenzhen Component Index",
 	"sz399006": "ChiNext Index",
-	"hk01347": "Hua Hong Semiconductor (HK)",
+	"hk01347":  "Hua Hong Semiconductor (HK)",
 }
 
 var stockCodes []string
@@ -70,21 +71,23 @@ func init() {
 }
 
 type Stock struct {
-	Name    string  `json:"name"`
-	Pinyin  string  `json:"pinyin"`
-	Code    string  `json:"code"`
-	Price   float64 `json:"price"`
-	Open    float64 `json:"open"`
-	Change  float64 `json:"change"`
-	Ratio   float64 `json:"ratio"`
-	High    string  `json:"high"`
-	Low     string  `json:"low"`
-	Volume  int64   `json:"volume"`
-	Amount  string  `json:"amount"`
-	Buy1    string  `json:"buy1"`
-	Sell1   string  `json:"sell1"`
-	Lowest  string  `json:"lowest"`
-	Highest string  `json:"highest"`
+	Name     string  `json:"name"`
+	Pinyin   string  `json:"pinyin"`
+	Code     string  `json:"code"`
+	Price    float64 `json:"price"`
+	Open     float64 `json:"open"`
+	Change   float64 `json:"change"`
+	Ratio    float64 `json:"ratio"`
+	High     string  `json:"high"`
+	Low      string  `json:"low"`
+	Volume   int64   `json:"volume"`
+	Amount   string  `json:"amount"`
+	Buy1     string  `json:"buy1"`
+	Buy1Vol  int64   `json:"buy1_vol"`
+	Sell1    string  `json:"sell1"`
+	Sell1Vol int64   `json:"sell1_vol"`
+	Lowest   string  `json:"lowest"`
+	Highest  string  `json:"highest"`
 }
 
 func fetchStockData(codes []string) (string, error) {
@@ -181,7 +184,7 @@ func parseStockData(raw string) []Stock {
 
 		dataStr := strings.Trim(parts[1], "\"")
 		fields := strings.Split(dataStr, "~")
-		if len(fields) < 11 {
+		if len(fields) < 13 {
 			continue
 		}
 
@@ -205,21 +208,23 @@ func parseStockData(raw string) []Stock {
 		}
 
 		stocks = append(stocks, Stock{
-			Name:    name,
-			Pinyin:  toPinyin(name),
-			Code:    stockCode,
-			Price:   price,
-			Open:    openPrice,
-			Change:  round2(change),
-			Ratio:   round2(ratio),
-			High:    fields[5],
-			Low:     fields[6],
-			Volume:  parseInt64(fields[7]),
-			Amount:  fields[8],
-			Buy1:    fields[9],
-			Sell1:   fields[10],
-			Lowest:  lowest,
-			Highest: highest,
+			Name:     name,
+			Pinyin:   toPinyin(name),
+			Code:     stockCode,
+			Price:    price,
+			Open:     openPrice,
+			Change:   round2(change),
+			Ratio:    round2(ratio),
+			High:     fields[5],
+			Low:      fields[6],
+			Volume:   parseInt64(fields[7]),
+			Amount:   fields[8],
+			Buy1:     fields[9],
+			Buy1Vol:  parseInt64(fields[11]),
+			Sell1:    fields[10],
+			Sell1Vol: parseInt64(fields[12]),
+			Lowest:   lowest,
+			Highest:  highest,
 		})
 	}
 	return stocks
@@ -230,5 +235,9 @@ func getStocks() ([]Stock, error) {
 	if err != nil {
 		return nil, err
 	}
-	return parseStockData(raw), nil
+	stocks := parseStockData(raw)
+	sort.Slice(stocks, func(i, j int) bool {
+		return strings.ToLower(stocks[i].Name) < strings.ToLower(stocks[j].Name)
+	})
+	return stocks, nil
 }

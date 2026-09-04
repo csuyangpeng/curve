@@ -33,20 +33,25 @@ function formatRatio(ratio) {
 }
 
 function renderStocks(stocks) {
+  const sorted = [...stocks].sort((a, b) => {
+    const na = a.name.toLowerCase();
+    const nb = b.name.toLowerCase();
+    return na < nb ? -1 : na > nb ? 1 : 0;
+  });
   const keyword = searchInput.value.trim().toLowerCase();
   const filtered = keyword
-    ? stocks.filter(
+    ? sorted.filter(
         (s) =>
           s.pinyin.toLowerCase().includes(keyword) ||
           s.code.toLowerCase().includes(keyword) ||
           s.name.toLowerCase().includes(keyword)
       )
-    : stocks;
+    : sorted;
 
   stockCount.textContent = `${filtered.length} rows`;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="loading">No matching results</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="loading">No matching results</td></tr>';
     return;
   }
 
@@ -62,6 +67,10 @@ function renderStocks(stocks) {
           <td class="num ${cls}">${formatRatio(s.ratio)}</td>
           <td class="num">${s.lowest}</td>
           <td class="num">${s.highest}</td>
+          <td class="num">${s.sell1}</td>
+          <td class="num">${formatNum(s.sell1_vol)}</td>
+          <td class="num">${s.buy1}</td>
+          <td class="num">${formatNum(s.buy1_vol)}</td>
           <td class="num">${formatNum(s.volume)}</td>
         </tr>`;
     })
@@ -93,7 +102,7 @@ function showPanel() {
   visible = true;
   contentPanel.classList.remove("hidden");
   toggleBtn.classList.add("active");
-  tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="12" class="loading">Loading...</td></tr>';
   fetchStocks();
   stopPolling();
   timer = setInterval(fetchStocks, REFRESH_MS);
@@ -113,7 +122,7 @@ async function fetchStocks() {
   } catch {
     setStatus(false, "Fetch failed");
     if (allStocks.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="error">Unable to fetch quotes. Check your network or try again later.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="error">Unable to fetch quotes. Check your network or try again later.</td></tr>';
     }
   }
 }
